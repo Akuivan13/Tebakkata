@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tebak Kata</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    background-color: #3498db;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    max-width: 80%;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  input[type="text"],
+  button {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  button {
+    background-color: #fff;
+    color: #3498db;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  button:hover {
+    background-color: #ddd;
+  }
+
+  footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #2980b9;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+
+  .logo {
+    font-size: 72px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .container {
+      max-width: 100%;
+    }
+  }
+
+  .fadeIn {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .fadeOut {
+    animation: fadeOut 0.5s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><i class="fas fa-star"></i></div>
+    <h1 class="fadeIn">Selamat Datang di Game Tebak Kata</h1>
+    <p class="fadeIn" id="startMessage">Klik untuk memulai</p>
+    <p style="display: none;" class="fadeIn" id="clue"></p>
+    <p style="display: none;" class="fadeIn">Masukkan tebakan Anda:</p>
+    <input type="text" style="display: none;" class="fadeIn form-control mb-3" id="guessInput">
+    <button style="display: none;" class="fadeIn btn btn-primary" onclick="checkGuess()">Submit</button>
+    <p style="display: none;" class="fadeIn" id="message"></p>
+    <p style="display: none;" class="fadeIn" id="score"></p>
+    <p style="display: none;" class="fadeIn" id="timer"></p>
+  </div>
+
+  <footer>
+    Dibuat dengan <i class="fas fa-heart"></i> oleh M Rusydan Adha Keandre
+  </footer>
+
+  <script>
+    const words = [
+      { clue: "Buah yang berwarna merah dan sering dijadikan saus.", answer: "tomat" },
+      { clue: "Hewan yang bisa terbang dan menghasilkan telur.", answer: "burung" },
+      { clue: "Alat untuk menulis dengan tinta.", answer: "pensil" },
+      { clue: "Benda yang digunakan untuk mengukur waktu.", answer: "jam" },
+      { clue: "Negara di benua Eropa yang terkenal dengan Menara Eiffelnya.", answer: "prancis" },
+      { clue: "Benda yang menghasilkan suara ketika ditiup.", answer: "terompet" },
+      { clue: "Benda bulat yang digunakan untuk bermain sepak bola.", answer: "bola" },
+      { clue: "Nama hewan yang memiliki belalai panjang dan canggih.", answer: "gajah" },
+      { clue: "Hewan yang tinggal di air dan darat, tetapi tidak bisa terbang.", answer: "kodok" },
+      { clue: "Benda yang bisa berubah warna dan digunakan sebagai alat tulis di papan tulis.", answer: "spidol" },
+      { clue: "Hewan laut yang memiliki cangkang dan sering dimakan.", answer: "kepiting" },
+      { clue: "Negara yang memiliki bentuk paling unik di dunia dan terkenal dengan Opera House-nya.", answer: "australia" },
+      { clue: "Hewan yang terkenal dengan tanduknya yang besar dan hidup di hutan.", answer: "rusa" },
+      { clue: "Nama makanan cepat saji yang terbuat dari daging sapi dan roti.", answer: "burger" },
+      { clue: "Benda yang digunakan untuk mengambil makanan saat makan dan terbuat dari stainless steel.", answer: "sendok" }
+    ];
+
+    let score = 0;
+    let questionCount = 0;
+    let timer;
+    const totalTime = 20; // Waktu untuk setiap soal (detik)
+
+    const welcomeMessage = document.getElementById('startMessage');
+    welcomeMessage.addEventListener('click', startGame);
+
+    function startGame() {
+      score = 0;
+      questionCount = 0;
+      welcomeMessage.classList.add('fadeOut');
+      setTimeout(() => {
+        welcomeMessage.style.display = 'none';
+        nextQuestion();
+      }, 500); // Delay sebelum memunculkan soal baru
+    }
+
+    function nextQuestion() {
+      if (questionCount >= 5) {
+        endGame();
+        return;
+      }
+
+      questionCount++;
+      const randomIndex = Math.floor(Math.random() * words.length);
+      const selectedWord = words[randomIndex];
+      const clueElement = document.getElementById('clue');
+      const guessInput = document.getElementById('guessInput');
+      const submitButton = document.querySelector('button');
+      const messageElement = document.getElementById('message');
+      const scoreElement = document.getElementById('score');
+      const timerElement = document.getElementById('timer');
+
+      clueElement.textContent = selectedWord.clue;
+      clueElement.style.display = 'block';
+      clueElement.classList.add('fadeIn');
+      guessInput.value = '';
+      guessInput.style.display = 'block';
+      guessInput.classList.add('fadeIn');
+      submitButton.style.display = 'block';
+      submitButton.classList.add('fadeIn');
+      messageElement.style.display = 'none';
+      scoreElement.style.display = 'block';
+      scoreElement.textContent = `Skor: ${score}`;
+      timerElement.style.display = 'block';
+      timerElement.textContent = `Waktu tersisa: ${totalTime} detik`;
+
+      let timeLeft = totalTime;
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `Waktu tersisa: ${timeLeft} detik`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          checkGuess(true); // Waktu habis
+        }
+      }, 1000);
+
+      submitButton.onclick = () => checkGuess(false);
+
+      function checkGuess(timeUp) {
+        clearInterval(timer);
+        const userGuess = guessInput.value.toLowerCase();
+        if (!timeUp && userGuess === selectedWord.answer) {
+          score += 20;
+          messageElement.textContent = 'Selamat! Anda menebak kata dengan benar!';
+        } else if (timeUp) {
+          messageElement.textContent = 'Waktu habis! Coba soal berikutnya.';
+        } else {
+          messageElement.textContent = 'Maaf, tebakan Anda salah. Coba lagi.';
+        }
+        messageElement.style.display = 'block';
+        messageElement.classList.add('fadeIn');
+        setTimeout(() => {
+          messageElement.style.display = 'none';
+          nextQuestion();
+        }, 1000); // Tampilkan soal berikutnya setelah 1 detik
+      }
+    }
+
+    function endGame() {
+      const clueElement = document.getElementById('clue');
+      const guessInput = document.getElementById('guessInput');
+      const submitButton = document.querySelector('button');
+      const messageElement = document.getElementById('message');
+      const timerElement = document.getElementById('timer');
+
+      clueElement.style.display = 'none';
+      guessInput.style.display = 'none';
+      submitButton.style.display = 'none';
+      timerElement.style.display = 'none';
+      messageElement.textContent = `Permainan selesai! Skor akhir Anda: ${score}`;
+      messageElement.style.display = 'block';
+      messageElement.classList.add('fadeIn');
+    }
+  </script>
+</body>
+</html>
